@@ -1,0 +1,106 @@
+menu "Hardware Drivers Config"
+
+config SOC_STM32F103RC
+    bool
+    select SOC_SERIES_STM32F1
+    select RT_USING_COMPONENTS_INIT
+    select RT_USING_USER_MAIN
+    default y
+
+menu "Onboard Peripheral Drivers"
+
+endmenu
+
+menu "On-chip Peripheral Drivers"
+
+    config BSP_USING_GPIO
+        bool "Enable GPIO"
+        select RT_USING_PIN
+        default y
+
+    menuconfig BSP_USING_UART
+        bool "Enable UART"
+        default y
+        select RT_USING_SERIAL
+        if BSP_USING_UART
+            config BSP_USING_UART1
+                bool "Enable UART1"
+                default y
+
+            config BSP_UART1_RX_USING_DMA
+                bool "Enable UART1 RX DMA"
+                depends on BSP_USING_UART1 && RT_SERIAL_USING_DMA
+                default n
+
+            config BSP_USING_UART3
+                bool "Enable UART3"
+                default y
+
+            config BSP_UART3_RX_USING_DMA
+                bool "Enable UART3 RX DMA"
+                depends on BSP_USING_UART3 && RT_SERIAL_USING_DMA
+                default n
+
+            config BSP_USING_UART4
+                bool "Enable UART4"
+                default y
+
+            config BSP_UART4_RX_USING_DMA
+                bool "Enable UART4 RX DMA"
+                depends on BSP_USING_UART4 && RT_SERIAL_USING_DMA
+                default n
+        endif
+
+    menuconfig BSP_USING_PWM
+        bool "Enable PWM"
+        default n
+        select RT_USING_PWM
+        if BSP_USING_PWM
+        menuconfig BSP_USING_PWM8
+            bool "Enable timer8 output PWM"
+            default n
+            if BSP_USING_PWM8
+                config BSP_USING_PWM8_CH1
+                    bool "Enable PWM8 channel1"
+                    default n
+                config BSP_USING_PWM8_CH2
+                    bool "Enable PWM8 channel2"
+                    default n
+                config BSP_USING_PWM8_CH3
+                    bool "Enable PWM8 channel3"
+                    default n            
+                config BSP_USING_PWM8_CH4
+                    bool "Enable PWM8 channel4"
+                    default n
+            endif
+        endif
+
+    menuconfig BSP_USING_PULSE_ENCODER
+        bool "Enable Pulse Encoder"
+        default n
+        select RT_USING_PULSE_ENCODER
+        if BSP_USING_PULSE_ENCODER
+            config BSP_USING_PULSE_ENCODER2
+                bool "Enable Pulse Encoder2"
+                default n
+            config BSP_USING_PULSE_ENCODER3
+                bool "Enable Pulse Encoder3"
+                default n
+            config BSP_USING_PULSE_ENCODER4
+                bool "Enable Pulse Encoder4"
+                default n
+            config BSP_USING_PULSE_ENCODER5
+                bool "Enable Pulse Encoder5"
+                default n
+
+        endif
+        
+    source "libraries/HAL_Drivers/Kconfig"
+       
+endmenu
+
+menu "Board extended module Drivers"
+
+endmenu
+
+endmenu
