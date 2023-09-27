@@ -1,11 +1,7 @@
 #include "motor_pwm.h"
-
 #include "status.h"
-
 #include "sbus.h"
-
 #include "hostpc.h"
-
 
 struct rt_device_pwm *pwm_dev;
 
@@ -17,7 +13,6 @@ static rt_thread_t motor_pwm_thread = RT_NULL;
 /*----------------------   pwm电机控制线程   --------------------------*/
 
 
-
 /* 线程 1 的入口函数 */
 static void motor_pwm_thread_entry(void *parameter)
 {
@@ -26,10 +21,10 @@ static void motor_pwm_thread_entry(void *parameter)
     rt_int32_t w = 0;
     rt_int16_t b = 0;
     
-    
     while (1)
     {
-        /* 读公共内存，写的话用互斥量保护起来 */
+        /* 读公共内存，写的话用互斥量保护起来 */      
+        
         x = sbus.ly;
         y = sbus.lx;
         w = sbus.rx;
@@ -42,13 +37,15 @@ static void motor_pwm_thread_entry(void *parameter)
         
         //rt_kprintf("%d %d %d\n", x, y, w);
 
-        if (b < SBUS_SW_MID)
+        if (b < SBUS_SW_MID) /* 遥控控制 */
         {
             chassis_control(x,y,w);
         }
         else
         {
-            chassis_control(0,0,0);
+            chassis_control(status.hostpc_control_ref.x, status.hostpc_control_ref.y, status.hostpc_control_ref.w);
+            
+            //chassis_control(0,0,0);
         }
 
         rt_thread_mdelay(50);

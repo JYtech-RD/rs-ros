@@ -1,6 +1,9 @@
 #include "hostpc.h"
 
 
+hostpc_t hostpc;
+
+
 /* ----------------------- Data Struct ------------------------------------- */
 /* 串口接收消息结构*/
 struct rx_msg
@@ -82,7 +85,10 @@ static void hostpc_uart_thread_entry(void *parameter)
                 /* 满足帧头才判断帧长 */
                 if (data_count >= 10) 
                 {
-
+                    
+                    hostpc.x = (byte[3]<<8) | byte[2];
+                    hostpc.y = (byte[5]<<8) | byte[4];
+                    hostpc.w = (byte[7]<<8) | byte[6];
 
                     /* 准备下一数据帧接收 */
                     data_count = 0;                

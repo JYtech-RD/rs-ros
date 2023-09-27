@@ -14,12 +14,24 @@ typedef struct {
 } chassis_speed_ref_t;
 
 
+typedef enum {
+    REMOTE_CONTROL = 0,
+    HOSTPC_CONTROL,
 
+} control_mode_t;
 
 
 typedef struct {
     
-    chassis_speed_ref_t chassis_speed_ref;
+    control_mode_t control_mode;    
+    
+    chassis_speed_ref_t remote_control_ref;
+    
+    chassis_speed_ref_t hostpc_control_ref;
+    
+    
+    
+    
     
     rt_uint8_t barrier;
     
