@@ -7,6 +7,8 @@ struct rt_device_pwm *pwm_dev;
 
 static void chassis_control(rt_int16_t _x, rt_int16_t _y, rt_int16_t _z);
 
+static void chassis_control_mode1(float _x, float _w);
+
 static rt_thread_t motor_pwm_thread = RT_NULL;
 
 
@@ -16,38 +18,37 @@ static rt_thread_t motor_pwm_thread = RT_NULL;
 /* 线程 1 的入口函数 */
 static void motor_pwm_thread_entry(void *parameter)
 {
+    RT_UNUSED(chassis_control);
+    
     rt_int32_t x = 0;
-    rt_int32_t y = 0;
     rt_int32_t w = 0;
-    rt_int16_t b = 0;
+    rt_int16_t a = 0;
+    
+    float speed_x, speed_w;
     
     while (1)
     {
         /* 读公共内存，写的话用互斥量保护起来 */      
-        
         x = sbus.ly;
-        y = sbus.lx;
         w = sbus.rx;
-        b = sbus.sf;
-        
-        x = (x - SBUS_CH_OFFSET)*8000/SBUS_CH_LENGTH;
-        y = (y - SBUS_CH_OFFSET)*8000/SBUS_CH_LENGTH;
-        w = (w - SBUS_CH_OFFSET)*8000/SBUS_CH_LENGTH;
-        
-        
-        //rt_kprintf("%d %d %d\n", x, y, w);
+        a = sbus.sa;
 
-        if (b < SBUS_SW_MID) /* 遥控控制 */
+        if (a < SBUS_SW_MID) /* 上位机控制 */
         {
-            chassis_control(x,y,w);
+            chassis_control_mode1(status.info_recv.linear_v_x, status.info_recv.angular_v);
         }
-        else
+        else if (a > SBUS_SW_MID) /* 遥控控制 */
         {
-            chassis_control(status.hostpc_control_ref.x, status.hostpc_control_ref.y, status.hostpc_control_ref.w);
+            speed_x = (x - SBUS_CH_OFFSET)/((float)SBUS_CH_LENGTH);
+            speed_w = (w - SBUS_CH_OFFSET)/((float)SBUS_CH_LENGTH);
             
-            //chassis_control(0,0,0);
+            chassis_control_mode1(speed_x, speed_w);
         }
-
+        else    /* 紧急停止 */
+        {
+            chassis_control_mode1(0.0, 0.0);
+        }
+        
         rt_thread_mdelay(50);
     }
 }
@@ -105,7 +106,7 @@ INIT_APP_EXPORT(motor_thread_init);
 /*--------------------   电机控制引脚、PWM设备初始化  ---------------------*/
 
 
-static void motor_speed_set1(rt_int16_t _p)
+static void motor_speed_set1(rt_int32_t _p)
 {
     rt_int32_t __p = 0;
     __p = _p;
@@ -128,7 +129,7 @@ static void motor_speed_set1(rt_int16_t _p)
 }
 
 
-static void motor_speed_set2(rt_int16_t _p)
+static void motor_speed_set2(rt_int32_t _p)
 {  
     rt_int32_t __p = 0;
     __p = _p;
@@ -150,7 +151,7 @@ static void motor_speed_set2(rt_int16_t _p)
     rt_pwm_set(pwm_dev, 2, 1000000, __p);    
 }
 
-static void motor_speed_set3(rt_int16_t _p)
+static void motor_speed_set3(rt_int32_t _p)
 {
     rt_int32_t __p = 0;
     __p = _p;
@@ -172,7 +173,7 @@ static void motor_speed_set3(rt_int16_t _p)
     rt_pwm_set(pwm_dev, 3, 1000000, __p); 
 }
 
-static void motor_speed_set4(rt_int16_t _p)
+static void motor_speed_set4(rt_int32_t _p)
 {
     rt_int32_t __p = 0;
     __p = _p;
@@ -206,6 +207,74 @@ static void chassis_control(rt_int16_t _x, rt_int16_t _y, rt_int16_t _z)
     _rb = _x + _y + _z;
     _rf = _x - _y + _z;
         
+	motor_speed_set1(_lf);
+	motor_speed_set2(_lb);
+	motor_speed_set3(_rb);
+	motor_speed_set4(_rf);
+}
+
+
+/*
+    _x 最大 0.5
+    _w 最大 4.0
+*/
+static void limit_v(rt_int32_t *p)
+{
+    if (*p > 6000)
+        *p = 6000;
+    
+    if (*p < -6000)
+        *p = -6000;
+    
+}
+
+static void limit_w(rt_int32_t *p)
+{
+    if (*p > 30000)
+        *p = 30000;
+    
+    if (*p < -30000)
+        *p = -30000;
+    
+}
+
+static void chassis_control_mode1(float _x, float _w)
+{
+    rt_int16_t _lf = 0;
+    rt_int16_t _lb = 0;    
+    rt_int16_t _rb = 0;
+    rt_int16_t _rf = 0;
+    
+    rt_int32_t x, w;
+    
+    x = (rt_int32_t)(_x * 10000);
+    w = (rt_int32_t)(_w * 30000);
+    
+    
+    limit_v(&x);
+    limit_w(&w);
+//    if (x > 8000)
+//        x = 8000;
+//    if (w > 8000)
+//        w = 8000;    
+    
+    _lf = x + w*0.23/2;
+    _lb = x + w*0.23/2;
+    _rb = x - w*0.23/2;
+    _rf = x - w*0.23/2;
+    
+    /* 限速 */
+//    if (_lf > 8000)
+//        _lf = 8000;
+//    if (_lb > 8000)
+//        _lb = 8000;    
+//    if (_rf > 8000)
+//        _rf = 8000;
+//    if (_rb > 8000)
+//        _rb = 8000;  
+
+    
+    /* 最大传入 10000 */
 	motor_speed_set1(_lf);
 	motor_speed_set2(_lb);
 	motor_speed_set3(_rb);

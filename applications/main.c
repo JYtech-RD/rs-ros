@@ -3,7 +3,6 @@
 #include <board.h>
 
 
-
 #define LED0_PIN    GET_PIN(A, 8)
 
 int main(void)

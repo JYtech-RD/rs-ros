@@ -1,7 +1,9 @@
 #include "hostpc.h"
-
+#include "status.h"
 
 hostpc_t hostpc;
+
+
 
 
 /* ----------------------- Data Struct ------------------------------------- */
@@ -67,15 +69,7 @@ static void hostpc_uart_thread_entry(void *parameter)
             /* 从串口读取数据*/
             rx_length = rt_device_read(msg.dev, 0, &rx_buffer[data_count], msg.size);
             data_count = data_count + rx_length;
-            
-            //rt_kprintf("%d\n",rx_length);
-            
-//            for (int i=0; i<rx_length; i++)
-//            {
-//                rt_kprintf("%02x ", rx_buffer[i]);
-//            }
-//            rt_kprintf("\n");
-            
+                       
             
             /*  FF FF XL XH YL YH WL WH DIS SUM   */
             
@@ -83,13 +77,28 @@ static void hostpc_uart_thread_entry(void *parameter)
             if ( (byte[0] == 0xFF) && (byte[1] == 0xFF) )
             {
                 /* 满足帧头才判断帧长 */
-                if (data_count >= 10) 
+                if (data_count >= 15) 
                 {
+                    hostpc.recv.linear_v_x.cvalue[0] = byte[2];
+                    hostpc.recv.linear_v_x.cvalue[1] = byte[3];
+                    hostpc.recv.linear_v_x.cvalue[2] = byte[4];
+                    hostpc.recv.linear_v_x.cvalue[3] = byte[5];
                     
-                    hostpc.x = (byte[3]<<8) | byte[2];
-                    hostpc.y = (byte[5]<<8) | byte[4];
-                    hostpc.w = (byte[7]<<8) | byte[6];
+                    hostpc.recv.linear_v_y.cvalue[0] = byte[2];
+                    hostpc.recv.linear_v_y.cvalue[1] = byte[3];
+                    hostpc.recv.linear_v_y.cvalue[2] = byte[4];
+                    hostpc.recv.linear_v_y.cvalue[3] = byte[5];                    
 
+                    hostpc.recv.angular_v.cvalue[0] = byte[2];
+                    hostpc.recv.angular_v.cvalue[1] = byte[3];
+                    hostpc.recv.angular_v.cvalue[2] = byte[4];
+                    hostpc.recv.angular_v.cvalue[3] = byte[5];
+                    
+                    
+                    status.info_recv.linear_v_x = hostpc.recv.linear_v_x.fvalue;
+                    status.info_recv.linear_v_y = hostpc.recv.linear_v_y.fvalue;
+                    status.info_recv.angular_v  = hostpc.recv.angular_v.fvalue;
+                    
                     /* 准备下一数据帧接收 */
                     data_count = 0;                
                 }
@@ -101,6 +110,75 @@ static void hostpc_uart_thread_entry(void *parameter)
         }
     }
 }
+
+
+
+/* 线程 1 的入口函数 */
+static void hostpc_send_thread_entry(void *parameter)
+{
+    rt_uint8_t send_buf[27];
+    
+    rt_uint8_t *buffer = send_buf;
+    
+    send_buf[0] = 0xFF;
+    send_buf[1] = 0xFF;
+    
+//    hostpc.send.speed_x.fvalue = 1.0;
+//    hostpc.send.speed_y.fvalue = 2.0;
+    
+    while (1)
+    {
+        hostpc.send.position_x.fvalue   = status.info_send.position_x;
+        hostpc.send.position_y.fvalue   = status.info_send.position_y;
+        hostpc.send.speed_x.fvalue      = status.info_send.speed_x;
+        hostpc.send.speed_y.fvalue      = status.info_send.speed_y;
+        hostpc.send.speed_angular.fvalue= status.info_send.speed_angular;
+        hostpc.send.pose_angula.fvalue  = status.info_send.pose_angula;
+        
+        
+        send_buf[2] = hostpc.send.position_x.cvalue[0];
+        send_buf[3] = hostpc.send.position_x.cvalue[1];
+        send_buf[4] = hostpc.send.position_x.cvalue[2];
+        send_buf[5] = hostpc.send.position_x.cvalue[3];
+        
+        send_buf[6] = hostpc.send.position_y.cvalue[0];
+        send_buf[7] = hostpc.send.position_y.cvalue[1];
+        send_buf[8] = hostpc.send.position_y.cvalue[2];
+        send_buf[9] = hostpc.send.position_y.cvalue[3];        
+        
+        send_buf[10] = hostpc.send.speed_x.cvalue[0];
+        send_buf[11] = hostpc.send.speed_x.cvalue[1];
+        send_buf[12] = hostpc.send.speed_x.cvalue[2];
+        send_buf[13] = hostpc.send.speed_x.cvalue[3];        
+                
+        send_buf[14] = hostpc.send.speed_y.cvalue[0];
+        send_buf[15] = hostpc.send.speed_y.cvalue[1];
+        send_buf[16] = hostpc.send.speed_y.cvalue[2];
+        send_buf[17] = hostpc.send.speed_y.cvalue[3];         
+        
+        send_buf[18] = hostpc.send.speed_angular.cvalue[0];
+        send_buf[19] = hostpc.send.speed_angular.cvalue[1];
+        send_buf[20] = hostpc.send.speed_angular.cvalue[2];
+        send_buf[21] = hostpc.send.speed_angular.cvalue[3]; 
+        
+        send_buf[22] = hostpc.send.pose_angula.cvalue[0];
+        send_buf[23] = hostpc.send.pose_angula.cvalue[1];
+        send_buf[24] = hostpc.send.pose_angula.cvalue[2];
+        send_buf[25] = hostpc.send.pose_angula.cvalue[3];         
+        
+        send_buf[26] =  buffer[2]^buffer[3]^buffer[4]^buffer[5]^buffer[6]^buffer[7]^
+                        buffer[8]^buffer[9]^buffer[10]^buffer[11]^buffer[12]^buffer[13]^
+                        buffer[14]^buffer[15]^buffer[16]^buffer[17]^buffer[18]^buffer[19]^
+                        buffer[20]^buffer[21]^buffer[22]^buffer[23]^buffer[24]^buffer[25];
+        
+        rt_device_write(serial, 0, send_buf, 27);
+
+        rt_thread_mdelay(100);
+    }
+}
+
+
+
 
 int dr16_init(void)
 {
@@ -132,8 +210,8 @@ int dr16_init(void)
     rt_device_set_rx_indicate(serial, uart_input);
 
     /* 创建 serial 线程 */
-    rt_thread_t thread = rt_thread_create("hostpc", hostpc_uart_thread_entry, RT_NULL, 1024, 25, 10);
-    
+    rt_thread_t thread = rt_thread_create("pcrecv", hostpc_uart_thread_entry, RT_NULL, 1024, 25, 10);
+               
     /* 创建成功则启动线程 */
     if (thread != RT_NULL)
     {
@@ -143,7 +221,18 @@ int dr16_init(void)
     {
         ret = RT_ERROR;
     }
-
+    
+    thread = rt_thread_create("pcsend", hostpc_send_thread_entry, RT_NULL, 1024, 25, 10);
+    
+    if (thread != RT_NULL)
+    {
+        rt_thread_startup(thread);
+    }
+    else
+    {
+        ret = RT_ERROR;
+    }    
+    
     return ret;
 }
 
