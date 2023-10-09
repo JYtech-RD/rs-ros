@@ -84,15 +84,15 @@ static void hostpc_uart_thread_entry(void *parameter)
                     hostpc.recv.linear_v_x.cvalue[2] = byte[4];
                     hostpc.recv.linear_v_x.cvalue[3] = byte[5];
                     
-                    hostpc.recv.linear_v_y.cvalue[0] = byte[2];
-                    hostpc.recv.linear_v_y.cvalue[1] = byte[3];
-                    hostpc.recv.linear_v_y.cvalue[2] = byte[4];
-                    hostpc.recv.linear_v_y.cvalue[3] = byte[5];                    
+                    hostpc.recv.linear_v_y.cvalue[0] = byte[6];
+                    hostpc.recv.linear_v_y.cvalue[1] = byte[7];
+                    hostpc.recv.linear_v_y.cvalue[2] = byte[8];
+                    hostpc.recv.linear_v_y.cvalue[3] = byte[9];                    
 
-                    hostpc.recv.angular_v.cvalue[0] = byte[2];
-                    hostpc.recv.angular_v.cvalue[1] = byte[3];
-                    hostpc.recv.angular_v.cvalue[2] = byte[4];
-                    hostpc.recv.angular_v.cvalue[3] = byte[5];
+                    hostpc.recv.angular_v.cvalue[0] = byte[10];
+                    hostpc.recv.angular_v.cvalue[1] = byte[11];
+                    hostpc.recv.angular_v.cvalue[2] = byte[12];
+                    hostpc.recv.angular_v.cvalue[3] = byte[13];
                     
                     
                     status.info_recv.linear_v_x = hostpc.recv.linear_v_x.fvalue;
