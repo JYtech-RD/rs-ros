@@ -19,6 +19,8 @@ typedef struct {
     float_union linear_v_x;
     float_union linear_v_y;
     float_union angular_v;
+    
+    float_union barrier_distance;
 } recv_t;
 
 typedef struct {
@@ -37,6 +39,8 @@ typedef struct {
     send_t send;
     recv_t recv;
     
+    rt_uint8_t barrier;
+    
 } hostpc_t;
 
 
@@ -45,9 +49,6 @@ extern hostpc_t hostpc;
 
 
 
-
-
 #endif
-
 
 

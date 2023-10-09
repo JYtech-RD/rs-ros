@@ -174,8 +174,6 @@
 
 /* Signal Processing and Control Algorithm Packages */
 
-#define PKG_USING_CMSIS_DSP
-#define PKG_USING_CMSIS_DSP_LATEST_VERSION
 
 /* miscellaneous packages */
 

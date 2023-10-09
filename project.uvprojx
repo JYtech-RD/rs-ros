@@ -14,16 +14,16 @@
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
-          <Device>STM32F103RB</Device>
+          <Device>STM32F103RC</Device>
           <Vendor>STMicroelectronics</Vendor>
           <PackID>Keil.STM32F1xx_DFP.2.4.0</PackID>
           <PackURL>http://www.keil.com/pack/</PackURL>
-          <Cpu>IRAM(0x20000000,0x5000) IROM(0x08000000,0x20000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
+          <Cpu>IRAM(0x20000000,0x0000C000) IROM(0x08000000,0x00040000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
-          <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F10x_128 -FS08000000 -FL020000 -FP0($$Device:STM32F103RB$Flash\STM32F10x_128.FLM))</FlashDriverDll>
+          <FlashDriverDll>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F10x_512 -FS08000000 -FL080000 -FP0($$Device:STM32F103RC$Flash\STM32F10x_512.FLM))</FlashDriverDll>
           <DeviceId>0</DeviceId>
-          <RegisterFile>$$Device:STM32F103RB$Device\Include\stm32f10x.h</RegisterFile>
+          <RegisterFile>$$Device:STM32F103RC$Device\Include\stm32f10x.h</RegisterFile>
           <MemoryEnv></MemoryEnv>
           <Cmp></Cmp>
           <Asm></Asm>
@@ -33,7 +33,7 @@
           <SLE66CMisc></SLE66CMisc>
           <SLE66AMisc></SLE66AMisc>
           <SLE66LinkerMisc></SLE66LinkerMisc>
-          <SFDFile>$$Device:STM32F103RB$SVD\STM32F103xx.svd</SFDFile>
+          <SFDFile>$$Device:STM32F103RC$SVD\STM32F103xx.svd</SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
           <BinPath></BinPath>
@@ -138,7 +138,7 @@
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3>"" ()</Flash3>
+          <Flash3></Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -247,12 +247,12 @@
               <IRAM>
                 <Type>0</Type>
                 <StartAddress>0x20000000</StartAddress>
-                <Size>0x5000</Size>
+                <Size>0xc000</Size>
               </IRAM>
               <IROM>
                 <Type>1</Type>
                 <StartAddress>0x8000000</StartAddress>
-                <Size>0x20000</Size>
+                <Size>0x40000</Size>
               </IROM>
               <XRAM>
                 <Type>0</Type>
@@ -277,7 +277,7 @@
               <OCR_RVCT4>
                 <Type>1</Type>
                 <StartAddress>0x8000000</StartAddress>
-                <Size>0x20000</Size>
+                <Size>0x40000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -302,7 +302,7 @@
               <OCR_RVCT9>
                 <Type>0</Type>
                 <StartAddress>0x20000000</StartAddress>
-                <Size>0x5000</Size>
+                <Size>0xc000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER, STM32F103xE, __RTTHREAD__, RT_USING_ARM_LIBC, __CLK_TCK=RT_TICK_PER_SECOND</Define>
               <Undefine></Undefine>
-              <IncludePath>applications;.;packages\CMSIS-DSP-latest\Include;packages\CMSIS-DSP-latest\Include\dsp;packages\CMSIS-DSP-latest\PrivateInclude;rt-thread\components\libc\compilers\common;rt-thread\components\libc\compilers\common\extension;rt-thread\libcpu\arm\common;rt-thread\libcpu\arm\cortex-m3;rt-thread\components\drivers\include;rt-thread\components\drivers\include;rt-thread\components\drivers\include;board;board\CubeMX_Config\Inc;libraries\HAL_Drivers;libraries\HAL_Drivers\config;rt-thread\components\finsh;.;rt-thread\include;libraries\STM32F1xx_HAL\CMSIS\Device\ST\STM32F1xx\Include;libraries\STM32F1xx_HAL\STM32F1xx_HAL_Driver\Inc;libraries\STM32F1xx_HAL\CMSIS\Include;rt-thread\components\libc\posix\io\poll;rt-thread\components\libc\posix\io\stdio;rt-thread\components\libc\posix\ipc</IncludePath>
+              <IncludePath>applications;.;packages\button-v1.0.1;rt-thread\components\libc\compilers\common;rt-thread\components\libc\compilers\common\extension;rt-thread\libcpu\arm\common;rt-thread\libcpu\arm\cortex-m3;rt-thread\components\drivers\include;rt-thread\components\drivers\include;rt-thread\components\drivers\include;board;board\CubeMX_Config\Inc;libraries\HAL_Drivers;libraries\HAL_Drivers\config;rt-thread\components\finsh;.;rt-thread\include;libraries\STM32F1xx_HAL\CMSIS\Device\ST\STM32F1xx\Include;libraries\STM32F1xx_HAL\STM32F1xx_HAL_Driver\Inc;libraries\STM32F1xx_HAL\CMSIS\Include;rt-thread\components\libc\posix\io\poll;rt-thread\components\libc\posix\io\stdio;rt-thread\components\libc\posix\ipc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -385,19 +385,14 @@
           <GroupName>Applications</GroupName>
           <Files>
             <File>
-              <FileName>motor_pwm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>applications\motor_pwm.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\main.c</FilePath>
             </File>
             <File>
-              <FileName>status.c</FileName>
+              <FileName>sbus.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\status.c</FilePath>
+              <FilePath>applications\sbus.c</FilePath>
             </File>
             <File>
               <FileName>motor_encoder.c</FileName>
@@ -405,14 +400,19 @@
               <FilePath>applications\motor_encoder.c</FilePath>
             </File>
             <File>
+              <FileName>status.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\status.c</FilePath>
+            </File>
+            <File>
+              <FileName>motor_pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\motor_pwm.c</FilePath>
+            </File>
+            <File>
               <FileName>hostpc.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\hostpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>sbus.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>applications\sbus.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -420,35 +420,30 @@
           <GroupName>Compiler</GroupName>
           <Files>
             <File>
-              <FileName>syscall_mem.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\components\libc\compilers\armlibc\syscall_mem.c</FilePath>
-            </File>
-            <File>
               <FileName>syscalls.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\libc\compilers\armlibc\syscalls.c</FilePath>
             </File>
             <File>
-              <FileName>stdlib.c</FileName>
+              <FileName>syscall_mem.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\components\libc\compilers\common\stdlib.c</FilePath>
+              <FilePath>rt-thread\components\libc\compilers\armlibc\syscall_mem.c</FilePath>
             </File>
             <File>
               <FileName>time.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\libc\compilers\common\time.c</FilePath>
             </File>
+            <File>
+              <FileName>stdlib.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\components\libc\compilers\common\stdlib.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>CPU</GroupName>
           <Files>
-            <File>
-              <FileName>div0.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\libcpu\arm\common\div0.c</FilePath>
-            </File>
             <File>
               <FileName>backtrace.c</FileName>
               <FileType>1</FileType>
@@ -458,6 +453,11 @@
               <FileName>showmem.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\libcpu\arm\common\showmem.c</FilePath>
+            </File>
+            <File>
+              <FileName>div0.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\libcpu\arm\common\div0.c</FilePath>
             </File>
             <File>
               <FileName>context_rvds.S</FileName>
@@ -475,24 +475,14 @@
           <GroupName>DeviceDrivers</GroupName>
           <Files>
             <File>
+              <FileName>workqueue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\components\drivers\ipc\workqueue.c</FilePath>
+            </File>
+            <File>
               <FileName>dataqueue.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\drivers\ipc\dataqueue.c</FilePath>
-            </File>
-            <File>
-              <FileName>ringbuffer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\components\drivers\ipc\ringbuffer.c</FilePath>
-            </File>
-            <File>
-              <FileName>ringblk_buf.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\components\drivers\ipc\ringblk_buf.c</FilePath>
-            </File>
-            <File>
-              <FileName>waitqueue.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\components\drivers\ipc\waitqueue.c</FilePath>
             </File>
             <File>
               <FileName>pipe.c</FileName>
@@ -500,14 +490,24 @@
               <FilePath>rt-thread\components\drivers\ipc\pipe.c</FilePath>
             </File>
             <File>
+              <FileName>ringblk_buf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\components\drivers\ipc\ringblk_buf.c</FilePath>
+            </File>
+            <File>
               <FileName>completion.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\drivers\ipc\completion.c</FilePath>
             </File>
             <File>
-              <FileName>workqueue.c</FileName>
+              <FileName>ringbuffer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\components\drivers\ipc\workqueue.c</FilePath>
+              <FilePath>rt-thread\components\drivers\ipc\ringbuffer.c</FilePath>
+            </File>
+            <File>
+              <FileName>waitqueue.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\components\drivers\ipc\waitqueue.c</FilePath>
             </File>
             <File>
               <FileName>rt_drv_pwm.c</FileName>
@@ -600,34 +600,24 @@
           <GroupName>Kernel</GroupName>
           <Files>
             <File>
-              <FileName>ipc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\src\ipc.c</FilePath>
-            </File>
-            <File>
-              <FileName>irq.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\src\irq.c</FilePath>
-            </File>
-            <File>
               <FileName>scheduler.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\src\scheduler.c</FilePath>
             </File>
             <File>
-              <FileName>object.c</FileName>
+              <FileName>thread.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\src\object.c</FilePath>
+              <FilePath>rt-thread\src\thread.c</FilePath>
             </File>
             <File>
-              <FileName>device.c</FileName>
+              <FileName>kservice.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\src\device.c</FilePath>
+              <FilePath>rt-thread\src\kservice.c</FilePath>
             </File>
             <File>
-              <FileName>components.c</FileName>
+              <FileName>ipc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\src\components.c</FilePath>
+              <FilePath>rt-thread\src\ipc.c</FilePath>
             </File>
             <File>
               <FileName>clock.c</FileName>
@@ -640,14 +630,24 @@
               <FilePath>rt-thread\src\mempool.c</FilePath>
             </File>
             <File>
+              <FileName>mem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\src\mem.c</FilePath>
+            </File>
+            <File>
+              <FileName>device.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\src\device.c</FilePath>
+            </File>
+            <File>
               <FileName>idle.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\src\idle.c</FilePath>
             </File>
             <File>
-              <FileName>kservice.c</FileName>
+              <FileName>object.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\src\kservice.c</FilePath>
+              <FilePath>rt-thread\src\object.c</FilePath>
             </File>
             <File>
               <FileName>timer.c</FileName>
@@ -655,14 +655,14 @@
               <FilePath>rt-thread\src\timer.c</FilePath>
             </File>
             <File>
-              <FileName>mem.c</FileName>
+              <FileName>irq.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\src\mem.c</FilePath>
+              <FilePath>rt-thread\src\irq.c</FilePath>
             </File>
             <File>
-              <FileName>thread.c</FileName>
+              <FileName>components.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\src\thread.c</FilePath>
+              <FilePath>rt-thread\src\components.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -743,6 +743,16 @@
               <FileName>stm32f1xx_hal_gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>libraries\STM32F1xx_HAL\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_gpio.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>button_drive</GroupName>
+          <Files>
+            <File>
+              <FileName>button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\button-v1.0.1\button.c</FilePath>
             </File>
           </Files>
         </Group>

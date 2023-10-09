@@ -35,21 +35,34 @@ static void motor_pwm_thread_entry(void *parameter)
         w = sbus.rx;
         a = sbus.sa;
 
-        if (a < SBUS_SW_MID) /* 上位机控制 */
+
+        if (a < SBUS_SW_MID) /* SA 拨在上面，上位机控制 */
         {
-            chassis_control_mode1(status.info_recv.linear_v_x, status.info_recv.angular_v);
+            if (status.barrier <= 30) /* 停障功能 距离40cm */
+            {
+                chassis_control_mode1(0.0, 0.0);
+            }
+            else
+            {
+                chassis_control_mode1(status.info_recv.linear_v_x, status.info_recv.angular_v);
+            }
         }
-        else if (a > SBUS_SW_MID) /* 遥控控制 */
+        
+        else if (a > SBUS_SW_MID) /* SA拨在下面，遥控控制 */
         {
             speed_x = (x - SBUS_CH_OFFSET)/((float)SBUS_CH_LENGTH);
             speed_w = (w - SBUS_CH_OFFSET)/((float)SBUS_CH_LENGTH);
             
             chassis_control_mode1(speed_x, speed_w);
         }
-        else    /* 紧急停止 */
+        
+        else    /* SA拨在中间，紧急停止 */
         {
             chassis_control_mode1(0.0, 0.0);
         }
+ 
+
+
         
         rt_thread_mdelay(50);
     }
@@ -208,7 +221,7 @@ static void chassis_control(rt_int16_t _x, rt_int16_t _y, rt_int16_t _z)
     _lb = _x + _y - _z;
     _rb = _x + _y + _z;
     _rf = _x - _y + _z;
-        
+    
 	motor_speed_set1(_lf);
 	motor_speed_set2(_lb);
 	motor_speed_set3(_rb);
@@ -237,7 +250,6 @@ static void limit_w(rt_int32_t *p)
     
     if (*p < -30000)
         *p = -30000;
-    
 }
 
 static void chassis_control_mode1(float _x, float _w)
@@ -260,10 +272,10 @@ static void chassis_control_mode1(float _x, float _w)
 //    if (w > 8000)
 //        w = 8000;    
     
-    _lf = x + w*0.23/2;
-    _lb = x + w*0.23/2;
-    _rb = x - w*0.23/2;
-    _rf = x - w*0.23/2;
+    _lf = x - w*0.23/2;
+    _lb = x - w*0.23/2;
+    _rb = x + w*0.23/2;
+    _rf = x + w*0.23/2;
     
     /* 限速 */
 //    if (_lf > 8000)

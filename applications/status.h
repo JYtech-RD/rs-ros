@@ -6,19 +6,6 @@
 #include <rtdevice.h>
 #include <board.h>
 
-/* 参考速度 */
-typedef struct {
-    rt_int16_t x;
-    rt_int16_t y;
-    rt_int16_t w;  
-} chassis_speed_ref_t;
-
-
-typedef enum {
-    REMOTE_CONTROL = 0,
-    HOSTPC_CONTROL,
-
-} control_mode_t;
 
 
 typedef struct {
@@ -40,12 +27,12 @@ typedef struct {
     float linear_v_x;
     float linear_v_y;
     float angular_v;
+    
+    float barrier_distance;
 } info_recv_t;
 
 
 typedef struct {
-    
-    control_mode_t control_mode;    
     
     info_send_t info_send;
     info_recv_t info_recv;

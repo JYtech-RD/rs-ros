@@ -57,6 +57,7 @@ static void hostpc_uart_thread_entry(void *parameter)
     
     rt_uint8_t data_count = 0;
     
+    rt_uint32_t distance;
     
     while (1)
     {
@@ -77,7 +78,7 @@ static void hostpc_uart_thread_entry(void *parameter)
             if ( (byte[0] == 0xFF) && (byte[1] == 0xFF) )
             {
                 /* 满足帧头才判断帧长 */
-                if (data_count >= 15) 
+                if (data_count >= 19) 
                 {
                     hostpc.recv.linear_v_x.cvalue[0] = byte[2];
                     hostpc.recv.linear_v_x.cvalue[1] = byte[3];
@@ -94,10 +95,25 @@ static void hostpc_uart_thread_entry(void *parameter)
                     hostpc.recv.angular_v.cvalue[2] = byte[12];
                     hostpc.recv.angular_v.cvalue[3] = byte[13];
                     
+                    hostpc.recv.barrier_distance.cvalue[0] = byte[14];
+                    hostpc.recv.barrier_distance.cvalue[1] = byte[15];
+                    hostpc.recv.barrier_distance.cvalue[2] = byte[16];
+                    hostpc.recv.barrier_distance.cvalue[3] = byte[17];
                     
-                    status.info_recv.linear_v_x = hostpc.recv.linear_v_x.fvalue;
-                    status.info_recv.linear_v_y = hostpc.recv.linear_v_y.fvalue;
-                    status.info_recv.angular_v  = hostpc.recv.angular_v.fvalue;
+                    status.info_recv.linear_v_x         = hostpc.recv.linear_v_x.fvalue;
+                    status.info_recv.linear_v_y         = hostpc.recv.linear_v_y.fvalue;
+                    status.info_recv.angular_v          = hostpc.recv.angular_v.fvalue;
+                    status.info_recv.barrier_distance   = hostpc.recv.barrier_distance.fvalue;
+                    
+                    distance = (rt_uint32_t)(status.info_recv.barrier_distance*100); /* 障碍物距离转换为cm */
+                    
+                    if (distance > 200)
+                        distance = 200;
+                    
+                    status.barrier = distance;
+                    
+                    //rt_kprintf("%d cm  %d cm\n", distance, status.barrier);
+                    
                     
                     /* 准备下一数据帧接收 */
                     data_count = 0;                
