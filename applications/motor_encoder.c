@@ -3,26 +3,11 @@
 
 #include "math.h"
 
-static rt_int32_t trans(rt_int32_t c, rt_uint8_t m)
-{
-    rt_int32_t temp;
-    
-    if (c > 32768/2)
-    {
-        temp = c - 32768;    
-    }
-    else
-    {
-        temp = c;
-    }
-    
-    if (m == 1)
-    {
-        temp = -temp;
-    }
 
-    return temp;
-}
+static rt_int32_t trans(rt_int32_t c, rt_uint8_t m);
+static float angle_to_limit(float f);
+
+
 
 static rt_thread_t encoder_thread = RT_NULL;
 
@@ -143,6 +128,7 @@ static void encoder_thread_entry(void *parameter)
         status.info_send.speed_angular = (v_l - v_r) / L;
 
         status.info_send.pose_angula += status.info_send.speed_angular*DELAY_TIME;
+        status.info_send.pose_angula = angle_to_limit(status.info_send.pose_angula);
         status.info_send.position_x  += status.info_send.speed_x*cosf(status.info_send.pose_angula)*DELAY_TIME;
         status.info_send.position_y  += status.info_send.speed_x*sinf(status.info_send.pose_angula)*DELAY_TIME;
 
@@ -183,4 +169,41 @@ int encoder_thread_init(void)
 
 INIT_APP_EXPORT(encoder_thread_init);
 
+
+
+static rt_int32_t trans(rt_int32_t c, rt_uint8_t m)
+{
+    rt_int32_t temp;
+    
+    if (c > 32768/2)
+    {
+        temp = c - 32768;    
+    }
+    else
+    {
+        temp = c;
+    }
+    
+    if (m == 1)
+    {
+        temp = -temp;
+    }
+
+    return temp;
+}
+
+static float angle_to_limit(float f)
+{
+    float temp;
+    
+    if (f > 0.0f)
+    {
+        temp = fmodf(f + PI, 2 * PI) - PI;
+    }
+    else
+    {
+        temp = fmodf(f - PI, -2 * PI) + PI;
+    }
+    return temp;
+}
 
