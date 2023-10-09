@@ -26,6 +26,8 @@ static void motor_pwm_thread_entry(void *parameter)
     
     float speed_x, speed_w;
     
+    sbus.sa = SBUS_CH_MIN;
+    
     while (1)
     {
         /* 读公共内存，写的话用互斥量保护起来 */      
