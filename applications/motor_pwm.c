@@ -38,7 +38,7 @@ static void motor_pwm_thread_entry(void *parameter)
 
         if (a < SBUS_SW_MID) /* SA 拨在上面，上位机控制 */
         {
-            if (status.barrier <= 30) /* 停障功能 距离40cm */
+            if (status.barrier <= 30) /* 停障功能 距离30cm */
             {
                 chassis_control_mode1(0.0, 0.0);
             }
@@ -64,7 +64,7 @@ static void motor_pwm_thread_entry(void *parameter)
 
 
         
-        rt_thread_mdelay(50);
+        rt_thread_mdelay(25);
     }
 }
 
