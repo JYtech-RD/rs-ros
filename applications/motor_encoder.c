@@ -3,6 +3,8 @@
 
 #include "math.h"
 
+#include "sbus.h"
+
 
 static rt_int32_t trans(rt_int32_t c, rt_uint8_t m);
 static float angle_to_limit(float f);
@@ -21,8 +23,6 @@ static void encoder_thread_entry(void *parameter)
     rt_device_t pulse_encoder_dev3 = RT_NULL;   
     rt_device_t pulse_encoder_dev4 = RT_NULL;   
     
-    
-    
     rt_int32_t count;
 
     /* 查找脉冲编码器设备 */
@@ -36,13 +36,11 @@ static void encoder_thread_entry(void *parameter)
     ret = rt_device_open(pulse_encoder_dev2, RT_DEVICE_OFLAG_RDONLY);
     ret = rt_device_open(pulse_encoder_dev3, RT_DEVICE_OFLAG_RDONLY);
     ret = rt_device_open(pulse_encoder_dev4, RT_DEVICE_OFLAG_RDONLY);
-       
     
     if (ret != RT_EOK)
     {
         rt_kprintf("open encoder device failed!\n");
     }
-    
     
     rt_int32_t count_lf, count_lb, count_rf, count_rb;
     rt_int32_t countsum_lf, countsum_lb, countsum_rf, countsum_rb;
@@ -53,6 +51,9 @@ static void encoder_thread_entry(void *parameter)
     
     float v_l, v_r;
     
+    
+    rt_uint16_t sh;
+    
     while(1)
     {
         /*
@@ -60,7 +61,6 @@ static void encoder_thread_entry(void *parameter)
             2. 转换成 4 个轮子的移动距离，并计算 4 个轮子的速度
             3. 计算累计位置，合成底盘中心点的速度
         */
-        
         /* 读编码器原始值 */
         rt_device_read(pulse_encoder_dev1, 0, &count, 1);
         count_lf = trans(count, 1);
@@ -88,7 +88,8 @@ static void encoder_thread_entry(void *parameter)
         /* 计算每个轮子移动的距离 */
         #define PI  3.141593f
         #define N   2460.0f         /* 转一圈的编码器计数值 */
-        #define D   0.095           /* 车轮直径 9.5 cm */
+        //#define D   0.095f           /* 麦轮直径 9.5 cm */
+        #define D   0.109f           /* 胶轮直径 11cm */
         
         distance_lf = ((float)count_lf)*PI*D/N;
         distance_lb = ((float)count_lb)*PI*D/N; 
@@ -110,6 +111,13 @@ static void encoder_thread_entry(void *parameter)
         v_lb = distance_lb / DELAY_TIME;
         v_rf = distance_rf / DELAY_TIME;
         v_rb = distance_rb / DELAY_TIME;
+        
+        
+        status.chassis.motor_lf.v_feedback = v_lf;
+        status.chassis.motor_lb.v_feedback = v_lb;
+        status.chassis.motor_rf.v_feedback = v_rf;
+        status.chassis.motor_rb.v_feedback = v_rb;
+        
         
 //        rt_kprintf("%6d mm/s", (int)(v_lf*1000));
 //        rt_kprintf("%6d mm/s", (int)(v_lb*1000));
@@ -143,6 +151,15 @@ static void encoder_thread_entry(void *parameter)
         rt_device_control(pulse_encoder_dev2, PULSE_ENCODER_CMD_CLEAR_COUNT, RT_NULL);
         rt_device_control(pulse_encoder_dev3, PULSE_ENCODER_CMD_CLEAR_COUNT, RT_NULL);
         rt_device_control(pulse_encoder_dev4, PULSE_ENCODER_CMD_CLEAR_COUNT, RT_NULL);
+        
+        
+        sh = sbus.sh;
+        
+        if (sh > SBUS_SW_MID)
+        {
+            rt_hw_cpu_reset();
+        }
+        
         
         rt_thread_mdelay(100);
     }

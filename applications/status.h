@@ -33,13 +33,30 @@ typedef struct {
 
 
 typedef struct {
+    float       v_ref;
+    float       v_feedback;
+    rt_int16_t  pwm;
+} motor_t;
+
+
+typedef struct {
+    motor_t motor_lf;
+    motor_t motor_lb;
+    motor_t motor_rf;
+    motor_t motor_rb;
+} chassis_t;
+
+
+
+typedef struct {
     
     info_send_t info_send;
     info_recv_t info_recv;
 
     rt_uint8_t barrier;
     
-
+    chassis_t chassis;
+    
 } status_t;
 
 

@@ -5,8 +5,6 @@
 
 struct rt_device_pwm *pwm_dev;
 
-static void chassis_control(rt_int16_t _x, rt_int16_t _y, rt_int16_t _z);
-
 static void chassis_control_mode1(float _x, float _w);
 
 static rt_thread_t motor_pwm_thread = RT_NULL;
@@ -18,8 +16,6 @@ static rt_thread_t motor_pwm_thread = RT_NULL;
 /* 线程 1 的入口函数 */
 static void motor_pwm_thread_entry(void *parameter)
 {
-    RT_UNUSED(chassis_control);
-    
     rt_int32_t x = 0;
     rt_int32_t w = 0;
     rt_int16_t a = 0;
@@ -34,11 +30,11 @@ static void motor_pwm_thread_entry(void *parameter)
         x = sbus.ly;
         w = sbus.rx;
         a = sbus.sa;
-
-
+        
+        
         if (a < SBUS_SW_MID) /* SA 拨在上面，上位机控制 */
         {
-            if (status.barrier <= 30) /* 停障功能 距离30cm */
+            if (status.barrier <= 50) /* 停障功能 距离30cm */
             {
                 chassis_control_mode1(0.0, 0.0);
             }
@@ -51,7 +47,7 @@ static void motor_pwm_thread_entry(void *parameter)
         else if (a > SBUS_SW_MID) /* SA拨在下面，遥控控制 */
         {
             speed_x = (x - SBUS_CH_OFFSET)/((float)SBUS_CH_LENGTH);
-            speed_w = (w - SBUS_CH_OFFSET)/((float)SBUS_CH_LENGTH);
+            speed_w = 3.0f * ((float)(w - SBUS_CH_OFFSET)) / ((float)SBUS_CH_LENGTH);
             
             chassis_control_mode1(speed_x, speed_w);
         }
@@ -60,9 +56,6 @@ static void motor_pwm_thread_entry(void *parameter)
         {
             chassis_control_mode1(0.0, 0.0);
         }
- 
-
-
         
         rt_thread_mdelay(25);
     }
@@ -210,50 +203,52 @@ static void motor_speed_set4(rt_int32_t _p)
     rt_pwm_set(pwm_dev, 4, 1000000, __p);     
 }
 
-static void chassis_control(rt_int16_t _x, rt_int16_t _y, rt_int16_t _z)
-{
-    rt_int16_t _lf = 0;
-    rt_int16_t _lb = 0;    
-    rt_int16_t _rb = 0;
-    rt_int16_t _rf = 0;
-    
-    _lf = _x - _y - _z;
-    _lb = _x + _y - _z;
-    _rb = _x + _y + _z;
-    _rf = _x - _y + _z;
-    
-	motor_speed_set1(_lf);
-	motor_speed_set2(_lb);
-	motor_speed_set3(_rb);
-	motor_speed_set4(_rf);
-}
+
 
 
 /*
+    PWM 占空比最大 10000
     _x 最大 0.5
     _w 最大 4.0
 */
-static void limit_v(rt_int32_t *p)
+static void pwm_limit_v(rt_int32_t *p)
 {
-    if (*p > 6000)
-        *p = 6000;
+    if (*p > 5000)
+        *p = 5000;
     
-    if (*p < -6000)
-        *p = -6000;
+    if (*p < -5000)
+        *p = -5000;
     
 }
 
-static void limit_w(rt_int32_t *p)
+static void pwm_limit_w(rt_int32_t *p)
 {
-    if (*p > 30000)
-        *p = 30000;
+    if (*p > 8000)
+        *p = 8000;
     
-    if (*p < -30000)
-        *p = -30000;
+    if (*p < -8000)
+        *p = -8000;
 }
 
+
+
+
+/*
+    最大 _x 1.0 m/s           一般 0.1 ~0.2 m/s 比较合适
+    最大 _w 3.0 rad/s         一般 PI/9 rad/s  差不多(20deg/s)
+*/
 static void chassis_control_mode1(float _x, float _w)
 {
+    /* 逆运动学，底盘速度计算每个轮子的参考速度 */
+    status.chassis.motor_lf.v_ref = _x - _w * 0.23f * 0.5;
+    status.chassis.motor_lb.v_ref = _x - _w * 0.23f * 0.5;
+    status.chassis.motor_rf.v_ref = _x + _w * 0.23f * 0.5;
+    status.chassis.motor_rb.v_ref = _x + _w * 0.23f * 0.5;
+    
+    
+    
+    
+    /* 最大10000 */
     rt_int16_t _lf = 0;
     rt_int16_t _lb = 0;    
     rt_int16_t _rb = 0;
@@ -262,32 +257,17 @@ static void chassis_control_mode1(float _x, float _w)
     rt_int32_t x, w;
     
     x = (rt_int32_t)(_x * 10000);
-    w = (rt_int32_t)(_w * 30000);
+    w = (rt_int32_t)(_w * 0.23 * 30000 / 2);  /* 1/2wL */
     
+    pwm_limit_v(&x);
+    pwm_limit_w(&w);
+  
+    _lf = x - w;
+    _lb = x - w;
+    _rb = x + w;
+    _rf = x + w;
     
-    limit_v(&x);
-    limit_w(&w);
-//    if (x > 8000)
-//        x = 8000;
-//    if (w > 8000)
-//        w = 8000;    
-    
-    _lf = x - w*0.23/2;
-    _lb = x - w*0.23/2;
-    _rb = x + w*0.23/2;
-    _rf = x + w*0.23/2;
-    
-    /* 限速 */
-//    if (_lf > 8000)
-//        _lf = 8000;
-//    if (_lb > 8000)
-//        _lb = 8000;    
-//    if (_rf > 8000)
-//        _rf = 8000;
-//    if (_rb > 8000)
-//        _rb = 8000;  
-
-    
+   
     /* 最大传入 10000 */
 	motor_speed_set1(_lf);
 	motor_speed_set2(_lb);
