@@ -1,6 +1,6 @@
 #include "motor_pwm.h"
 #include "status.h"
-#include "sbus.h"
+#include "ps2_controller.h"
 #include "hostpc.h"
 
 struct rt_device_pwm *pwm_dev;
@@ -18,23 +18,27 @@ static void motor_pwm_thread_entry(void *parameter)
 {
     rt_int32_t x = 0;
     rt_int32_t w = 0;
-    rt_int16_t a = 0;
-    
+
     float speed_x, speed_w;
-    
-    sbus.sa = SBUS_CH_MIN;
-    
+      
     while (1)
     {
-        /* 读公共内存，写的话用互斥量保护起来 */      
-        x = sbus.ly;
-        w = sbus.rx;
-        a = sbus.sa;
-        
-        
-        if (a < SBUS_SW_MID) /* SA 拨在上面，上位机控制 */
+        /* 读公共内存，写的话用互斥量保护起来 */
+        if (ps2_is_red_mode()) /* 遥控器启动摇杆模拟量输出 */
         {
-            if (status.barrier <= 50) /* 停障功能 距离30cm */
+            x = ps2_controller.PSS_BG_LY;
+            w = ps2_controller.PSS_BG_RX;
+        }
+        else
+        {
+            x = 0;
+            w = 0;
+        }
+        
+        
+        if (status.mode == AUTOMATIC) /* 自动模式，上位机控制 */
+        {
+            if (status.barrier <= 50) /* 停障功能 距离50cm */
             {
                 chassis_control_mode1(0.0, 0.0);
             }
@@ -44,18 +48,15 @@ static void motor_pwm_thread_entry(void *parameter)
             }
         }
         
-        else if (a > SBUS_SW_MID) /* SA拨在下面，遥控控制 */
+        else /* 遥控控制 */
         {
-            speed_x = (x - SBUS_CH_OFFSET)/((float)SBUS_CH_LENGTH);
-            speed_w = 3.0f * ((float)(w - SBUS_CH_OFFSET)) / ((float)SBUS_CH_LENGTH);
+            speed_x = ((float)x) / 128.0f * 0.3f;
+            speed_w = 3.0f * ( ((float)w) /  128.0f * 0.3f);
             
             chassis_control_mode1(speed_x, speed_w);
         }
         
-        else    /* SA拨在中间，紧急停止 */
-        {
-            chassis_control_mode1(0.0, 0.0);
-        }
+
         
         rt_thread_mdelay(25);
     }

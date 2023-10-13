@@ -50,10 +50,7 @@ static void encoder_thread_entry(void *parameter)
     float v_lf, v_lb, v_rf, v_rb;
     
     float v_l, v_r;
-    
-    
-    rt_uint16_t sh;
-    
+
     while(1)
     {
         /*
@@ -151,14 +148,6 @@ static void encoder_thread_entry(void *parameter)
         rt_device_control(pulse_encoder_dev2, PULSE_ENCODER_CMD_CLEAR_COUNT, RT_NULL);
         rt_device_control(pulse_encoder_dev3, PULSE_ENCODER_CMD_CLEAR_COUNT, RT_NULL);
         rt_device_control(pulse_encoder_dev4, PULSE_ENCODER_CMD_CLEAR_COUNT, RT_NULL);
-        
-        
-        sh = sbus.sh;
-        
-        if (sh > SBUS_SW_MID)
-        {
-            rt_hw_cpu_reset();
-        }
         
         
         rt_thread_mdelay(100);

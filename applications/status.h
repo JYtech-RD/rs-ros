@@ -47,6 +47,10 @@ typedef struct {
 } chassis_t;
 
 
+typedef enum {
+    AUTOMATIC = 0,
+    REMOTE,
+} mode_t;
 
 typedef struct {
     
@@ -56,6 +60,8 @@ typedef struct {
     rt_uint8_t barrier;
     
     chassis_t chassis;
+    
+    mode_t mode;
     
 } status_t;
 
