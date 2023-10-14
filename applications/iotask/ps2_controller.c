@@ -1,4 +1,4 @@
-#include "ps2_controller.h"
+#include "iotask/ps2_controller.h"
 #include "status.h"
 
 
@@ -253,19 +253,25 @@ rt_uint8_t ps2_is_red_mode(void)
 	if( Data[1] == 0x73)   
 		return 1 ;
 	return 0;
-}
+} 
 
 
 /*--------------------------  数据处理线程  ---------------------------*/
+
+rt_mutex_t ps2_mutex = RT_NULL;
+
 
 static void ps2_thread_entry(void *parameter)
 {
     PS2_init();
 
-    
     while (1)
     {
+        rt_mutex_take(ps2_mutex, RT_WAITING_FOREVER);
+        
         ps2_refresh();
+        
+        rt_mutex_release(ps2_mutex);
         
         
 //        if (ps2_controller.PSB_KEY_START == 1)
@@ -303,13 +309,17 @@ static void ps2_thread_entry(void *parameter)
 //            
 //		}
 
-        rt_thread_mdelay(100);
+        rt_thread_mdelay(50);
     }
 }
 
 int ps2_init(void)
 {
     rt_err_t ret = RT_EOK;
+    
+    
+    ps2_mutex = rt_mutex_create("psmutex", RT_IPC_FLAG_PRIO);
+    
 
     /* 创建 serial 线程 */
     rt_thread_t thread = rt_thread_create("ps2", 

@@ -385,34 +385,42 @@
           <GroupName>Applications</GroupName>
           <Files>
             <File>
-              <FileName>hostpc.c</FileName>
+              <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\hostpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>motor_pwm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>applications\motor_pwm.c</FilePath>
+              <FilePath>applications\main.c</FilePath>
             </File>
             <File>
               <FileName>status.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\status.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>ControlTask</GroupName>
+        </Group>
+        <Group>
+          <GroupName>IOtask</GroupName>
+          <Files>
             <File>
-              <FileName>main.c</FileName>
+              <FileName>hostpc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\main.c</FilePath>
+              <FilePath>.\applications\iotask\hostpc.c</FilePath>
+            </File>
+            <File>
+              <FileName>motor_pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\iotask\motor_pwm.c</FilePath>
             </File>
             <File>
               <FileName>motor_encoder.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\motor_encoder.c</FilePath>
+              <FilePath>.\applications\iotask\motor_encoder.c</FilePath>
             </File>
             <File>
               <FileName>ps2_controller.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\ps2_controller.c</FilePath>
+              <FilePath>.\applications\iotask\ps2_controller.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,8 +1,8 @@
-#include "motor_pwm.h"
-#include "status.h"
-#include "ps2_controller.h"
-#include "hostpc.h"
+#include "iotask/motor_pwm.h"
+#include "iotask/ps2_controller.h"
+#include "iotask/hostpc.h"
 
+#include "status.h"
 struct rt_device_pwm *pwm_dev;
 
 static void chassis_control_mode1(float _x, float _w);
@@ -20,10 +20,13 @@ static void motor_pwm_thread_entry(void *parameter)
     rt_int32_t w = 0;
 
     float speed_x, speed_w;
-      
+
     while (1)
     {
         /* 读公共内存，写的话用互斥量保护起来 */
+        
+        rt_mutex_take(ps2_mutex, RT_WAITING_FOREVER);
+        
         if (ps2_is_red_mode()) /* 遥控器启动摇杆模拟量输出 */
         {
             x = ps2_controller.PSS_BG_LY;
@@ -35,6 +38,7 @@ static void motor_pwm_thread_entry(void *parameter)
             w = 0;
         }
         
+        rt_mutex_release(ps2_mutex);
         
         if (status.mode == AUTOMATIC) /* 自动模式，上位机控制 */
         {
@@ -51,12 +55,10 @@ static void motor_pwm_thread_entry(void *parameter)
         else /* 遥控控制 */
         {
             speed_x = ((float)x) / 128.0f * 0.3f;
-            speed_w = 3.0f * ( ((float)w) /  128.0f * 0.3f);
+            speed_w = 4.0f * ( ((float)w) /  128.0f * 0.3f);
             
             chassis_control_mode1(speed_x, speed_w);
         }
-        
-
         
         rt_thread_mdelay(25);
     }
@@ -204,7 +206,13 @@ static void motor_speed_set4(rt_int32_t _p)
     rt_pwm_set(pwm_dev, 4, 1000000, __p);     
 }
 
-
+//static void motor_control_4(rt_int16_t m1, rt_int16_t m2, rt_int16_t m3, rt_int16_t m4)
+//{
+//	motor_speed_set1(m1);
+//	motor_speed_set2(m2);
+//	motor_speed_set3(m3);
+//	motor_speed_set4(m4);
+//}
 
 
 /*
@@ -234,6 +242,8 @@ static void pwm_limit_w(rt_int32_t *p)
 
 
 
+
+
 /*
     最大 _x 1.0 m/s           一般 0.1 ~0.2 m/s 比较合适
     最大 _w 3.0 rad/s         一般 PI/9 rad/s  差不多(20deg/s)
@@ -246,9 +256,7 @@ static void chassis_control_mode1(float _x, float _w)
     status.chassis.motor_rf.v_ref = _x + _w * 0.23f * 0.5;
     status.chassis.motor_rb.v_ref = _x + _w * 0.23f * 0.5;
     
-    
-    
-    
+    /*-----------------------------------  开环随便给  ------------------------------------*/
     /* 最大10000 */
     rt_int16_t _lf = 0;
     rt_int16_t _lb = 0;    
@@ -267,7 +275,7 @@ static void chassis_control_mode1(float _x, float _w)
     _lb = x - w;
     _rb = x + w;
     _rf = x + w;
-    
+    /*-----------------------------------  开环随便给↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑  ---------------------*/
    
     /* 最大传入 10000 */
 	motor_speed_set1(_lf);

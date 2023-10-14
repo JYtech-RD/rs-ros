@@ -1,4 +1,4 @@
-#include "hostpc.h"
+#include "iotask/hostpc.h"
 #include "status.h"
 
 hostpc_t hostpc;
@@ -80,37 +80,51 @@ static void hostpc_uart_thread_entry(void *parameter)
                 /* 满足帧头才判断帧长 */
                 if (data_count >= 19) 
                 {
-                    hostpc.recv.linear_v_x.cvalue[0] = byte[2];
-                    hostpc.recv.linear_v_x.cvalue[1] = byte[3];
-                    hostpc.recv.linear_v_x.cvalue[2] = byte[4];
-                    hostpc.recv.linear_v_x.cvalue[3] = byte[5];
-                    
-                    hostpc.recv.linear_v_y.cvalue[0] = byte[6];
-                    hostpc.recv.linear_v_y.cvalue[1] = byte[7];
-                    hostpc.recv.linear_v_y.cvalue[2] = byte[8];
-                    hostpc.recv.linear_v_y.cvalue[3] = byte[9];                    
+                    /* 校验通过才 */
+                    if ( byte[18] ==    (byte[2]^byte[3]^byte[4]^byte[5]^
+                                        byte[6]^byte[7]^byte[8]^byte[9]^
+                                        byte[10]^byte[11]^byte[12]^byte[13]^
+                                        byte[14]^byte[15]^byte[16]^byte[17]))
+                    {
+                        hostpc.recv.linear_v_x.cvalue[0] = byte[2];
+                        hostpc.recv.linear_v_x.cvalue[1] = byte[3];
+                        hostpc.recv.linear_v_x.cvalue[2] = byte[4];
+                        hostpc.recv.linear_v_x.cvalue[3] = byte[5];
+                        
+                        hostpc.recv.linear_v_y.cvalue[0] = byte[6];
+                        hostpc.recv.linear_v_y.cvalue[1] = byte[7];
+                        hostpc.recv.linear_v_y.cvalue[2] = byte[8];
+                        hostpc.recv.linear_v_y.cvalue[3] = byte[9];                    
 
-                    hostpc.recv.angular_v.cvalue[0] = byte[10];
-                    hostpc.recv.angular_v.cvalue[1] = byte[11];
-                    hostpc.recv.angular_v.cvalue[2] = byte[12];
-                    hostpc.recv.angular_v.cvalue[3] = byte[13];
-                    
-                    hostpc.recv.barrier_distance.cvalue[0] = byte[14];
-                    hostpc.recv.barrier_distance.cvalue[1] = byte[15];
-                    hostpc.recv.barrier_distance.cvalue[2] = byte[16];
-                    hostpc.recv.barrier_distance.cvalue[3] = byte[17];
-                    
-                    status.info_recv.linear_v_x         = hostpc.recv.linear_v_x.fvalue;
-                    status.info_recv.linear_v_y         = hostpc.recv.linear_v_y.fvalue;
-                    status.info_recv.angular_v          = hostpc.recv.angular_v.fvalue;
-                    status.info_recv.barrier_distance   = hostpc.recv.barrier_distance.fvalue;
-                    
-                    distance = (rt_uint32_t)(status.info_recv.barrier_distance*100); /* 障碍物距离转换为cm */
-                    
-                    if (distance > 200)
-                        distance = 200;
-                    
-                    status.barrier = distance;
+                        hostpc.recv.angular_v.cvalue[0] = byte[10];
+                        hostpc.recv.angular_v.cvalue[1] = byte[11];
+                        hostpc.recv.angular_v.cvalue[2] = byte[12];
+                        hostpc.recv.angular_v.cvalue[3] = byte[13];
+                        
+                        hostpc.recv.barrier_distance.cvalue[0] = byte[14];
+                        hostpc.recv.barrier_distance.cvalue[1] = byte[15];
+                        hostpc.recv.barrier_distance.cvalue[2] = byte[16];
+                        hostpc.recv.barrier_distance.cvalue[3] = byte[17];
+                        
+                        
+                        rt_mutex_take(status_mutex, RT_WAITING_FOREVER);
+                        
+                        status.info_recv.linear_v_x         = hostpc.recv.linear_v_x.fvalue;
+                        status.info_recv.linear_v_y         = hostpc.recv.linear_v_y.fvalue;
+                        status.info_recv.angular_v          = hostpc.recv.angular_v.fvalue;
+                        status.info_recv.barrier_distance   = hostpc.recv.barrier_distance.fvalue;
+                        
+                        distance = (rt_uint32_t)(status.info_recv.barrier_distance*100); /* 障碍物距离转换为cm */
+                        
+                        rt_mutex_release(status_mutex);
+                        
+                        
+                        if (distance > 200)
+                            distance = 200;
+                        
+                        status.barrier = distance;
+                    }
+
                     
                     //rt_kprintf("%d cm  %d cm\n", distance, status.barrier);
                     
@@ -144,6 +158,8 @@ static void hostpc_send_thread_entry(void *parameter)
     
     while (1)
     {
+        rt_mutex_take(status_mutex, RT_WAITING_FOREVER);
+        
         hostpc.send.position_x.fvalue   = status.info_send.position_x;
         hostpc.send.position_y.fvalue   = status.info_send.position_y;
         hostpc.send.speed_x.fvalue      = status.info_send.speed_x;
@@ -151,6 +167,7 @@ static void hostpc_send_thread_entry(void *parameter)
         hostpc.send.speed_angular.fvalue= status.info_send.speed_angular;
         hostpc.send.pose_angula.fvalue  = status.info_send.pose_angula;
         
+        rt_mutex_release(status_mutex);
         
         send_buf[2] = hostpc.send.position_x.cvalue[0];
         send_buf[3] = hostpc.send.position_x.cvalue[1];
@@ -196,9 +213,12 @@ static void hostpc_send_thread_entry(void *parameter)
 
 
 
-int dr16_init(void)
+int hostpc_init(void)
 {
     rt_err_t ret = RT_EOK;
+    
+    status_mutex = rt_mutex_create("s_mutex", RT_IPC_FLAG_PRIO);
+    
     static char msg_pool[256];
 
     /* 查找串口设备 */
@@ -253,44 +273,7 @@ int dr16_init(void)
 }
 
 /* 导出命令 or 自动初始化 */
-//MSH_CMD_EXPORT(dr16_init, dr16 remote controller init);
-INIT_APP_EXPORT(dr16_init);
+INIT_APP_EXPORT(hostpc_init);
 
 
-/*--------------------------  调试输出线程  ---------------------------*/
-
-static void dr16_debug_thread_entry(void *parameter)
-{
-    while (1)
-    {
-//        rt_kprintf("%4d %4d\n", dr16.rc.ch3, dr16.rc.ch1);
-//        rt_kprintf("%4d %4d\n", dr16.rc.ch2, dr16.rc.ch0);
-//        rt_kprintf("%4d %4d\n", dr16.rc.s1, dr16.rc.s2);
-        
-//        rt_kprintf("x:%d \n", dr16.mouse.x);
-//        rt_kprintf("y:%d \n", dr16.mouse.y);
-//        rt_kprintf("z:%d \n", dr16.mouse.z);
-//        rt_kprintf("%d \n", dr16.mouse.press_l);
-//        rt_kprintf("%d \n", dr16.mouse.press_r);
-//        rt_kprintf("%d \n", dr16.key.v);
-        
-        rt_kprintf("---------------\n");
-        
-        rt_thread_mdelay(500);
-    }
-}
-
-static int dr16_output(int argc, char *argv[])
-{
-    rt_thread_t thread = rt_thread_create("dr16_output", dr16_debug_thread_entry, RT_NULL, 1024, 25, 10);
-    /* 创建成功则启动线程 */
-    if (thread != RT_NULL)
-    {
-        rt_thread_startup(thread);
-    }
-
-    return 0;
-}
-/* 导出到 msh 命令列表中 */
-MSH_CMD_EXPORT(dr16_output, remote controller data debug outputuart);
 

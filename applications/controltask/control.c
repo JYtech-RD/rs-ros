@@ -7,7 +7,7 @@
 
 static void motion_thread_entry(void *parameter)
 {
-	rt_thread_mdelay(5000);
+	rt_thread_mdelay(2000);
     
     /* 偏转控制器 */
     controller_t mlf, mlb, mrf, mrb;
@@ -28,7 +28,6 @@ static void motion_thread_entry(void *parameter)
         status.chassis.motor_lb.pwm = controller_output(&mlb, status.chassis.motor_lb.v_ref, status.chassis.motor_lb.v_feedback);
         status.chassis.motor_rf.pwm = controller_output(&mrf, status.chassis.motor_rf.v_ref, status.chassis.motor_rf.v_feedback);
         status.chassis.motor_rb.pwm = controller_output(&mrb, status.chassis.motor_rb.v_ref, status.chassis.motor_rb.v_feedback);
-        
         
         
         

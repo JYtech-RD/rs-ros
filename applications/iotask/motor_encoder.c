@@ -1,10 +1,7 @@
-#include "motor_encoder.h"
+#include "iotask/motor_encoder.h"
 #include "status.h"
 
 #include "math.h"
-
-#include "sbus.h"
-
 
 static rt_int32_t trans(rt_int32_t c, rt_uint8_t m);
 static float angle_to_limit(float f);
@@ -102,13 +99,14 @@ static void encoder_thread_entry(void *parameter)
 
         
         /* 计算每个轮子的速度 */
-        #define DELAY_TIME      0.1f /* s = 100ms */
+        #define DELAY_TIME      0.05f /* s = 100ms */
         
         v_lf = distance_lf / DELAY_TIME;
         v_lb = distance_lb / DELAY_TIME;
         v_rf = distance_rf / DELAY_TIME;
         v_rb = distance_rb / DELAY_TIME;
         
+        rt_mutex_take(status_mutex, RT_WAITING_FOREVER);
         
         status.chassis.motor_lf.v_feedback = v_lf;
         status.chassis.motor_lb.v_feedback = v_lb;
@@ -137,6 +135,8 @@ static void encoder_thread_entry(void *parameter)
         status.info_send.position_x  += status.info_send.speed_x*cosf(status.info_send.pose_angula)*DELAY_TIME;
         status.info_send.position_y  += status.info_send.speed_x*sinf(status.info_send.pose_angula)*DELAY_TIME;
 
+        rt_mutex_release(status_mutex);
+        
 //        rt_kprintf("\x1b[2J\x1b[H");
 //        rt_kprintf("sx %6d mm/s\n", (int)(status.info_send.speed_x*1000));
 //        rt_kprintf("sa %6d rad/s\n", (int)(status.info_send.speed_angular*1000));
@@ -150,7 +150,7 @@ static void encoder_thread_entry(void *parameter)
         rt_device_control(pulse_encoder_dev4, PULSE_ENCODER_CMD_CLEAR_COUNT, RT_NULL);
         
         
-        rt_thread_mdelay(100);
+        rt_thread_mdelay(50);
     }
 }
 

@@ -67,7 +67,7 @@ typedef struct {
 
 
 extern status_t status;
-
+extern rt_mutex_t status_mutex;
 
 
 #endif
