@@ -59,6 +59,8 @@ typedef struct {
 
     rt_uint8_t barrier;
     
+    rt_uint8_t stop_distance;
+    
     chassis_t chassis;
     
     mode_t mode;

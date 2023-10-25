@@ -4,8 +4,6 @@
 hostpc_t hostpc;
 
 
-
-
 /* ----------------------- Data Struct ------------------------------------- */
 /* 串口接收消息结构*/
 struct rx_msg
@@ -59,6 +57,8 @@ static void hostpc_uart_thread_entry(void *parameter)
     
     rt_uint32_t distance;
     
+    rt_uint32_t stop_distance;
+    
     while (1)
     {
         rt_memset(&msg, 0, sizeof(msg));
@@ -72,19 +72,19 @@ static void hostpc_uart_thread_entry(void *parameter)
             data_count = data_count + rx_length;
                        
             
-            /*  FF FF XL XH YL YH WL WH DIS SUM   */
+            /*  FF FF XL XH YL YH WL WH DIS  [扩展信息，以后加上]  SUM   */
             
             /* 可以使用状态机解包 */
             if ( (byte[0] == 0xFF) && (byte[1] == 0xFF) )
             {
                 /* 满足帧头才判断帧长 */
-                if (data_count >= 19) 
+                if (data_count >= 20) 
                 {
                     /* 校验通过才 */
-                    if ( byte[18] ==    (byte[2]^byte[3]^byte[4]^byte[5]^
+                    if ( byte[19] ==    (byte[2]^byte[3]^byte[4]^byte[5]^
                                         byte[6]^byte[7]^byte[8]^byte[9]^
                                         byte[10]^byte[11]^byte[12]^byte[13]^
-                                        byte[14]^byte[15]^byte[16]^byte[17]))
+                                        byte[14]^byte[15]^byte[16]^byte[17]^byte[18]))
                     {
                         hostpc.recv.linear_v_x.cvalue[0] = byte[2];
                         hostpc.recv.linear_v_x.cvalue[1] = byte[3];
@@ -107,6 +107,7 @@ static void hostpc_uart_thread_entry(void *parameter)
                         hostpc.recv.barrier_distance.cvalue[3] = byte[17];
                         
                         
+                        
                         rt_mutex_take(status_mutex, RT_WAITING_FOREVER);
                         
                         status.info_recv.linear_v_x         = hostpc.recv.linear_v_x.fvalue;
@@ -114,7 +115,10 @@ static void hostpc_uart_thread_entry(void *parameter)
                         status.info_recv.angular_v          = hostpc.recv.angular_v.fvalue;
                         status.info_recv.barrier_distance   = hostpc.recv.barrier_distance.fvalue;
                         
+                        status.stop_distance = byte[18];
+                        
                         distance = (rt_uint32_t)(status.info_recv.barrier_distance*100); /* 障碍物距离转换为cm */
+                        
                         
                         rt_mutex_release(status_mutex);
                         
@@ -146,7 +150,7 @@ static void hostpc_uart_thread_entry(void *parameter)
 /* 线程 1 的入口函数 */
 static void hostpc_send_thread_entry(void *parameter)
 {
-    rt_uint8_t send_buf[27];
+    rt_uint8_t send_buf[30];
     
     rt_uint8_t *buffer = send_buf;
     
@@ -178,33 +182,37 @@ static void hostpc_send_thread_entry(void *parameter)
         send_buf[7] = hostpc.send.position_y.cvalue[1];
         send_buf[8] = hostpc.send.position_y.cvalue[2];
         send_buf[9] = hostpc.send.position_y.cvalue[3];        
-        
+                        
         send_buf[10] = hostpc.send.speed_x.cvalue[0];
         send_buf[11] = hostpc.send.speed_x.cvalue[1];
         send_buf[12] = hostpc.send.speed_x.cvalue[2];
         send_buf[13] = hostpc.send.speed_x.cvalue[3];        
-                
+                    
         send_buf[14] = hostpc.send.speed_y.cvalue[0];
         send_buf[15] = hostpc.send.speed_y.cvalue[1];
         send_buf[16] = hostpc.send.speed_y.cvalue[2];
-        send_buf[17] = hostpc.send.speed_y.cvalue[3];         
-        
+        send_buf[17] = hostpc.send.speed_y.cvalue[3];
+                    
         send_buf[18] = hostpc.send.speed_angular.cvalue[0];
         send_buf[19] = hostpc.send.speed_angular.cvalue[1];
         send_buf[20] = hostpc.send.speed_angular.cvalue[2];
-        send_buf[21] = hostpc.send.speed_angular.cvalue[3]; 
-        
+        send_buf[21] = hostpc.send.speed_angular.cvalue[3];
+                    
         send_buf[22] = hostpc.send.pose_angula.cvalue[0];
         send_buf[23] = hostpc.send.pose_angula.cvalue[1];
         send_buf[24] = hostpc.send.pose_angula.cvalue[2];
-        send_buf[25] = hostpc.send.pose_angula.cvalue[3];         
+        send_buf[25] = hostpc.send.pose_angula.cvalue[3];
+                    
+        send_buf[26] = status.mode;
         
-        send_buf[26] =  buffer[2]^buffer[3]^buffer[4]^buffer[5]^buffer[6]^buffer[7]^
+        /* 其他任何需要上传的信息，加载此处 */
+        
+        send_buf[27] =  buffer[2]^buffer[3]^buffer[4]^buffer[5]^buffer[6]^buffer[7]^
                         buffer[8]^buffer[9]^buffer[10]^buffer[11]^buffer[12]^buffer[13]^
                         buffer[14]^buffer[15]^buffer[16]^buffer[17]^buffer[18]^buffer[19]^
-                        buffer[20]^buffer[21]^buffer[22]^buffer[23]^buffer[24]^buffer[25];
+                        buffer[20]^buffer[21]^buffer[22]^buffer[23]^buffer[24]^buffer[25]^buffer[26];
         
-        rt_device_write(serial, 0, send_buf, 27);
+        rt_device_write(serial, 0, send_buf, 28);
 
         rt_thread_mdelay(100);
     }

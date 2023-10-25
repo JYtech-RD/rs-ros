@@ -1,4 +1,6 @@
 #include "iotask/motor_encoder.h"
+#include "iotask/ps2_controller.h"
+
 #include "status.h"
 
 #include "math.h"
@@ -124,7 +126,7 @@ static void encoder_thread_entry(void *parameter)
         #define     L   0.23    /* 左右轮间距 */
         
         v_l = (v_lf + v_lb)/2.0f;
-        v_r = (v_rf + v_rb)/2.0f;
+        v_r = (v_rf + v_rb)/2.0f; 
 
         status.info_send.speed_x = (v_l + v_r) / 2.0f;
         status.info_send.speed_y = 0.0f;
@@ -148,6 +150,13 @@ static void encoder_thread_entry(void *parameter)
         rt_device_control(pulse_encoder_dev2, PULSE_ENCODER_CMD_CLEAR_COUNT, RT_NULL);
         rt_device_control(pulse_encoder_dev3, PULSE_ENCODER_CMD_CLEAR_COUNT, RT_NULL);
         rt_device_control(pulse_encoder_dev4, PULSE_ENCODER_CMD_CLEAR_COUNT, RT_NULL);
+        
+        if (ps2_controller.PSB_KEY_START == 1)
+        {
+            status.info_send.position_x = 0;
+            status.info_send.position_y = 0;
+            status.info_send.pose_angula = 0;
+        }
         
         
         rt_thread_mdelay(50);

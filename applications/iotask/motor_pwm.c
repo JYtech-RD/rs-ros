@@ -42,7 +42,7 @@ static void motor_pwm_thread_entry(void *parameter)
         
         if (status.mode == AUTOMATIC) /* 自动模式，上位机控制 */
         {
-            if (status.barrier <= 50) /* 停障功能 距离50cm */
+            if (status.barrier <= status.stop_distance) /* 停障功能 距离50cm */
             {
                 chassis_control_mode1(0.0, 0.0);
             }
