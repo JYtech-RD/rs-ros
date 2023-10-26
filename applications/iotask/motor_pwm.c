@@ -78,10 +78,10 @@ static void motor_pwm_thread_entry(void *parameter)
 
 int motor_thread_init(void)
 {
-    controller_set_pid_parameter(&mlf, 20000, 0, 0);
-    controller_set_pid_parameter(&mlb, 20000, 0, 0);
-    controller_set_pid_parameter(&mrb, 20000, 0, 0);
-    controller_set_pid_parameter(&mrf, 20000, 0, 0);
+    controller_set_pid_parameter(&mlf, 25000, 40000, 0);
+    controller_set_pid_parameter(&mlb, 25000, 40000, 0);
+    controller_set_pid_parameter(&mrb, 25000, 40000, 0);
+    controller_set_pid_parameter(&mrf, 25000, 40000, 0);
     
 //    controller_set_output_limit(&mlf, 8000);
 //    controller_set_output_limit(&mlb, 8000);
@@ -243,7 +243,6 @@ static void pwm_limit_v(rt_int32_t *p)
     
     if (*p < -5000)
         *p = -5000;
-    
 }
 
 static void pwm_limit_w(rt_int32_t *p)
@@ -263,7 +262,6 @@ static void pwm_limit(rt_int16_t *p)
     
     if (*p < -9000)
         *p = -9000;
-    
 }
 
 
@@ -275,6 +273,9 @@ static void pwm_limit(rt_int16_t *p)
 static void chassis_control_mode1(float _x, float _w)
 {
     /* 逆运动学，底盘速度计算每个轮子的参考速度 */
+    
+    rt_mutex_take(status_mutex, RT_WAITING_FOREVER);
+    
     status.chassis.motor_lf.v_ref = _x - _w * 0.23f * 0.5;
     status.chassis.motor_lb.v_ref = _x - _w * 0.23f * 0.5;
     status.chassis.motor_rf.v_ref = _x + _w * 0.23f * 0.5;
@@ -294,6 +295,8 @@ static void chassis_control_mode1(float _x, float _w)
 	motor_speed_set2(status.chassis.motor_lb.pwm);
 	motor_speed_set3(status.chassis.motor_rb.pwm);
 	motor_speed_set4(status.chassis.motor_rf.pwm);
+    
+    rt_mutex_release(status_mutex);
     
     /*-----------------------------------  开环随便给  ------------------------------------*/
     /* 最大10000 */

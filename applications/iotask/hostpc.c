@@ -107,7 +107,6 @@ static void hostpc_uart_thread_entry(void *parameter)
                         hostpc.recv.barrier_distance.cvalue[3] = byte[17];
                         
                         
-                        
                         rt_mutex_take(status_mutex, RT_WAITING_FOREVER);
                         
                         status.info_recv.linear_v_x         = hostpc.recv.linear_v_x.fvalue;
