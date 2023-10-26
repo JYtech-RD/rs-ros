@@ -6,11 +6,11 @@
 #include <board.h>
 
 
-#define LPF_pi	3.141593
-#define LPF_fc	1
-#define LPF_Ts	0.005
+#define     LPF_pi	        3.141593
+#define     LPF_fc	        1
+#define     LPF_Ts	        0.005
 
-#define LPF_alpha ((2.0*LPF_pi*LPF_fc*LPF_Ts)/(2.0*LPF_pi*LPF_fc*LPF_Ts+1.0))
+#define     LPF_alpha       ((2.0*LPF_pi*LPF_fc*LPF_Ts)/(2.0*LPF_pi*LPF_fc*LPF_Ts+1.0))
 
 
 typedef struct 

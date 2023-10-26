@@ -398,6 +398,13 @@
         </Group>
         <Group>
           <GroupName>ControlTask</GroupName>
+          <Files>
+            <File>
+              <FileName>pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\controltask\pid.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>IOtask</GroupName>
