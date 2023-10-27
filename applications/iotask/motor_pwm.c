@@ -67,7 +67,7 @@ static void motor_pwm_thread_entry(void *parameter)
         else /* 遥控控制 */
         {
             speed_x = ((float)x) / 128.0f * 0.2f;
-            speed_w = 4.0f * (((float)w) /  128.0f * 0.3f);
+            speed_w = 8.0f * (((float)w) /  128.0f * 0.3f);
             
             chassis_control_mode1(speed_x, speed_w);
         }
@@ -78,17 +78,11 @@ static void motor_pwm_thread_entry(void *parameter)
 
 int motor_thread_init(void)
 {
-    controller_set_pid_parameter(&mlf, 25000, 40000, 0);
-    controller_set_pid_parameter(&mlb, 25000, 40000, 0);
-    controller_set_pid_parameter(&mrb, 25000, 40000, 0);
-    controller_set_pid_parameter(&mrf, 25000, 40000, 0);
-    
-//    controller_set_output_limit(&mlf, 8000);
-//    controller_set_output_limit(&mlb, 8000);
-//    controller_set_output_limit(&mrb, 8000);
-//    controller_set_output_limit(&mrf, 8000);
-    
-    
+    controller_set_pid_parameter(&mlf, 20000, 100000, 0);
+    controller_set_pid_parameter(&mlb, 20000, 100000, 0);
+    controller_set_pid_parameter(&mrb, 20000, 100000, 0);
+    controller_set_pid_parameter(&mrf, 28000, 100000, 0);
+
     rt_pin_mode(MOTOR_LF1_PIN, PIN_MODE_OUTPUT);
     rt_pin_mode(MOTOR_LF2_PIN, PIN_MODE_OUTPUT);
     rt_pin_mode(MOTOR_LB1_PIN, PIN_MODE_OUTPUT);
@@ -140,7 +134,7 @@ INIT_APP_EXPORT(motor_thread_init);
 /*--------------------   电机控制引脚、PWM设备初始化  ---------------------*/
 
 
-static void motor_speed_set1(rt_int32_t _p)
+static void motor_speed_setlf(rt_int32_t _p)
 {
     rt_int32_t __p = 0;
     __p = _p;
@@ -163,7 +157,7 @@ static void motor_speed_set1(rt_int32_t _p)
 }
 
 
-static void motor_speed_set2(rt_int32_t _p)
+static void motor_speed_setlb(rt_int32_t _p)
 {  
     rt_int32_t __p = 0;
     __p = _p;
@@ -185,7 +179,7 @@ static void motor_speed_set2(rt_int32_t _p)
     rt_pwm_set(pwm_dev, 2, 1000000, __p);    
 }
 
-static void motor_speed_set3(rt_int32_t _p)
+static void motor_speed_setrf(rt_int32_t _p)
 {
     rt_int32_t __p = 0;
     __p = _p;
@@ -207,7 +201,7 @@ static void motor_speed_set3(rt_int32_t _p)
     rt_pwm_set(pwm_dev, 3, 1000000, __p); 
 }
 
-static void motor_speed_set4(rt_int32_t _p)
+static void motor_speed_setrb(rt_int32_t _p)
 {
     rt_int32_t __p = 0;
     __p = _p;
@@ -278,8 +272,8 @@ static void chassis_control_mode1(float _x, float _w)
     
     status.chassis.motor_lf.v_ref = _x - _w * 0.23f * 0.5;
     status.chassis.motor_lb.v_ref = _x - _w * 0.23f * 0.5;
-    status.chassis.motor_rf.v_ref = _x + _w * 0.23f * 0.5;
     status.chassis.motor_rb.v_ref = _x + _w * 0.23f * 0.5;
+    status.chassis.motor_rf.v_ref = _x + _w * 0.23f * 0.5;
     
     status.chassis.motor_lf.pwm = controller_output(&mlf, status.chassis.motor_lf.v_ref, status.chassis.motor_lf.v_feedback);
     status.chassis.motor_lb.pwm = controller_output(&mlb, status.chassis.motor_lb.v_ref, status.chassis.motor_lb.v_feedback);
@@ -291,10 +285,10 @@ static void chassis_control_mode1(float _x, float _w)
     pwm_limit(&status.chassis.motor_rb.pwm);
     pwm_limit(&status.chassis.motor_rf.pwm);
     
-	motor_speed_set1(status.chassis.motor_lf.pwm);
-	motor_speed_set2(status.chassis.motor_lb.pwm);
-	motor_speed_set3(status.chassis.motor_rb.pwm);
-	motor_speed_set4(status.chassis.motor_rf.pwm);
+	motor_speed_setlf(status.chassis.motor_lf.pwm);
+	motor_speed_setlb(status.chassis.motor_lb.pwm);
+	motor_speed_setrb(status.chassis.motor_rb.pwm);
+	motor_speed_setrf(status.chassis.motor_rf.pwm);
     
     rt_mutex_release(status_mutex);
     
@@ -319,10 +313,10 @@ static void chassis_control_mode1(float _x, float _w)
 //    _rf = x + w;
 
 //    /* 最大传入 10000 */
-//	motor_speed_set1(_lf);
-//	motor_speed_set2(_lb);
-//	motor_speed_set3(_rb);
-//	motor_speed_set4(_rf);
+//	motor_speed_setlf(_lf);
+//	motor_speed_setlb(_lb);
+//	motor_speed_setrb(_rb);
+//	motor_speed_setrf(_rf);
     /*-----------------------------------  开环随便给↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑  ---------------------*/
     
     
