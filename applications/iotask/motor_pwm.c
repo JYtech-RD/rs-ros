@@ -17,8 +17,6 @@ static rt_thread_t motor_pwm_thread = RT_NULL;
 
 
 
-
-
 controller_t mlf, mlb, mrb, mrf;
 
 
@@ -60,7 +58,7 @@ static void motor_pwm_thread_entry(void *parameter)
             }
             else
             {
-                chassis_control_mode1(status.info_recv.linear_v_x, status.info_recv.angular_v);
+                chassis_control_mode1(status.info_recv.linear_v_x, 3.5f * status.info_recv.angular_v);
             }
         }
         
@@ -78,9 +76,9 @@ static void motor_pwm_thread_entry(void *parameter)
 
 int motor_thread_init(void)
 {
-    controller_set_pid_parameter(&mlf, 20000, 100000, 0);
-    controller_set_pid_parameter(&mlb, 20000, 100000, 0);
-    controller_set_pid_parameter(&mrb, 20000, 100000, 0);
+    controller_set_pid_parameter(&mlf, 18000, 100000, 0);
+    controller_set_pid_parameter(&mlb, 18000, 100000, 0);
+    controller_set_pid_parameter(&mrb, 18000, 100000, 0);
     controller_set_pid_parameter(&mrf, 28000, 100000, 0);
 
     rt_pin_mode(MOTOR_LF1_PIN, PIN_MODE_OUTPUT);

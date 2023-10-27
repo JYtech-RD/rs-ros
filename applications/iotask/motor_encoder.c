@@ -123,14 +123,14 @@ static void encoder_thread_entry(void *parameter)
 
         
         /* 里程计数据解算 */
-        #define     L   0.23    /* 左右轮间距 */
+        #define     L   0.23f    /* 左右轮间距 */
         
         v_l = (v_lf + v_lb)/2.0f;
         v_r = (v_rf + v_rb)/2.0f; 
 
         status.info_send.speed_x = (v_l + v_r) / 2.0f;
         status.info_send.speed_y = 0.0f;
-        status.info_send.speed_angular = -(v_l - v_r) / L;
+        status.info_send.speed_angular = -(v_l - v_r) / L / 2.0f;
 
         status.info_send.pose_angula += status.info_send.speed_angular*DELAY_TIME;
         status.info_send.pose_angula = angle_to_limit(status.info_send.pose_angula);
