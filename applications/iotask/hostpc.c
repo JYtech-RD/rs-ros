@@ -81,10 +81,10 @@ static void hostpc_uart_thread_entry(void *parameter)
                 if (data_count >= 19) 
                 {
                     /* 校验通过才 */
-                    if ( byte[18] ==    (byte[2]^byte[3]^byte[4]^byte[5]^
+                    if ( byte[19] ==    (byte[2]^byte[3]^byte[4]^byte[5]^
                                         byte[6]^byte[7]^byte[8]^byte[9]^
                                         byte[10]^byte[11]^byte[12]^byte[13]^
-                                        byte[14]^byte[15]^byte[16]^byte[17]))
+                                        byte[14]^byte[15]^byte[16]^byte[17]^byte[18]))
                     {
                         hostpc.recv.linear_v_x.cvalue[0] = byte[2];
                         hostpc.recv.linear_v_x.cvalue[1] = byte[3];
@@ -106,6 +106,7 @@ static void hostpc_uart_thread_entry(void *parameter)
                         hostpc.recv.barrier_distance.cvalue[2] = byte[16];
                         hostpc.recv.barrier_distance.cvalue[3] = byte[17];
                         
+                        status.stop_distance = byte[18];
                         
                         rt_mutex_take(status_mutex, RT_WAITING_FOREVER);
                         
@@ -115,6 +116,8 @@ static void hostpc_uart_thread_entry(void *parameter)
                         status.info_recv.barrier_distance   = hostpc.recv.barrier_distance.fvalue;
 
                         distance = (rt_uint32_t)(status.info_recv.barrier_distance*100); /* 障碍物距离转换为cm */
+                        
+                        
                         
                         
                         rt_mutex_release(status_mutex);
@@ -201,13 +204,14 @@ static void hostpc_send_thread_entry(void *parameter)
         send_buf[25] = hostpc.send.pose_angula.cvalue[3];
 
         /* 其他任何需要上传的信息，加载此处 */
+        send_buf[26] = status.mode;
         
-        send_buf[26] =  buffer[2]^buffer[3]^buffer[4]^buffer[5]^buffer[6]^buffer[7]^
+        send_buf[27] =  buffer[2]^buffer[3]^buffer[4]^buffer[5]^buffer[6]^buffer[7]^
                         buffer[8]^buffer[9]^buffer[10]^buffer[11]^buffer[12]^buffer[13]^
                         buffer[14]^buffer[15]^buffer[16]^buffer[17]^buffer[18]^buffer[19]^
-                        buffer[20]^buffer[21]^buffer[22]^buffer[23]^buffer[24]^buffer[25];
+                        buffer[20]^buffer[21]^buffer[22]^buffer[23]^buffer[24]^buffer[25]^buffer[26];
         
-        rt_device_write(serial, 0, send_buf, 27);
+        rt_device_write(serial, 0, send_buf, 28);
 
         rt_thread_mdelay(100);
     }
