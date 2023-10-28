@@ -58,7 +58,7 @@ static void motor_pwm_thread_entry(void *parameter)
             }
             else
             {
-                chassis_control_mode1(status.info_recv.linear_v_x, 3.5f * status.info_recv.angular_v);
+                chassis_control_mode1(status.info_recv.linear_v_x, 2.0f * status.info_recv.angular_v);
             }
         }
         

@@ -132,7 +132,7 @@ static void encoder_thread_entry(void *parameter)
         status.info_send.speed_y = 0.0f;
         status.info_send.speed_angular = -(v_l - v_r) / L / 2.0f;
 
-        status.info_send.pose_angula += status.info_send.speed_angular*DELAY_TIME;
+        status.info_send.pose_angula += 0.93f * status.info_send.speed_angular*DELAY_TIME;
         status.info_send.pose_angula = angle_to_limit(status.info_send.pose_angula);
         status.info_send.position_x  += status.info_send.speed_x*cosf(status.info_send.pose_angula)*DELAY_TIME;
         status.info_send.position_y  += status.info_send.speed_x*sinf(status.info_send.pose_angula)*DELAY_TIME;
