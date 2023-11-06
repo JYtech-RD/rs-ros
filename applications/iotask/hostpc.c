@@ -12,8 +12,9 @@ struct rx_msg
     rt_size_t size;
 };
 
-
 /*--------------------------  控制块  ---------------------------*/
+
+
 
 /* 串口设备句柄 */
 static rt_device_t serial;

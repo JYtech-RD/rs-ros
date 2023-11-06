@@ -52,7 +52,7 @@ static void motor_pwm_thread_entry(void *parameter)
         
         if (status.mode == AUTOMATIC) /* 自动模式，上位机控制 */
         {
-            if (status.barrier <= status.stop_distance) /* 停障功能 距离50cm */
+            if (status.barrier <= 30) /* 停障功能 距离20cm */
             {
                 chassis_control_mode1(0.0, 0.0);
             }
@@ -64,8 +64,8 @@ static void motor_pwm_thread_entry(void *parameter)
         
         else /* 遥控控制 */
         {
-            speed_x = ((float)x) / 128.0f * 0.2f;
-            speed_w = 8.0f * (((float)w) /  128.0f * 0.3f);
+            speed_x = ((float)x) / 128.0f * 0.4f;
+            speed_w = 8.0f * (((float)w) /  128.0f * 0.4f);
             
             chassis_control_mode1(speed_x, speed_w);
         }
@@ -77,8 +77,8 @@ static void motor_pwm_thread_entry(void *parameter)
 int motor_thread_init(void)
 {
     controller_set_pid_parameter(&mlf, 18000, 100000, 0);
-    controller_set_pid_parameter(&mlb, 18000, 100000, 0);
-    controller_set_pid_parameter(&mrb, 18000, 100000, 0);
+    controller_set_pid_parameter(&mlb, 28000, 100000, 0);
+    controller_set_pid_parameter(&mrb, 28000, 100000, 0);
     controller_set_pid_parameter(&mrf, 28000, 100000, 0);
 
     rt_pin_mode(MOTOR_LF1_PIN, PIN_MODE_OUTPUT);
@@ -315,11 +315,7 @@ static void chassis_control_mode1(float _x, float _w)
 //	motor_speed_setlb(_lb);
 //	motor_speed_setrb(_rb);
 //	motor_speed_setrf(_rf);
-    /*-----------------------------------  开环随便给↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑  ---------------------*/
-    
-    
-    
-   
+    /*-----------------------------------  开环随便给↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑  ---------------------*/  
 
 }
 
